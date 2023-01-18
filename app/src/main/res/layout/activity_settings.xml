@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SettingsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Notification" />
+        <RadioGroup
+            android:checkedButton="@+id/radio_group"
+            android:id="@+id/toggle"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/switch_border"
+            android:orientation="horizontal">
+        <RadioButton
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:layout_marginLeft="3dp"
+            android:id="@+id/switch_off"
+            android:background="@drawable/switch_drawable"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:gravity="center"
+            android:text="On"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/switch_color"/>
+        <RadioButton
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
+            android:id="@+id/switch_on"
+            android:background="@drawable/switch_drawable"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:gravity="center"
+            android:fontFamily="sans-serif-medium"
+            android:textColor="@color/switch_color"/>
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E4DEE4"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_margin="20dp"
+        android:text="Near by" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:weightSum="5"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/nearby_number"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:background="#DFD8D8"
+            android:text="5"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textStyle="bold"/>
+
+        <SeekBar
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekbar_nearby"
+            android:progressDrawable="@drawable/custom_seekbar"
+            android:indeterminate="false"
+            android:layout_weight="4"
+            android:max="11"
+            android:progress="5"
+            android:thumb="@drawable/seekbar_thumb" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E4DEE4"
+        android:layout_marginTop="10dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_margin="15dp"
+        android:id="@+id/change_password"
+        android:text="Change Password"
+        android:textStyle="bold"
+        android:textAllCaps="false"
+        android:backgroundTint="#DFD8D8"
+        android:textColor="@color/black"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E4DEE4" />
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/reset_application"
+        android:layout_margin="15dp"
+        android:text="Reset Application"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:backgroundTint="#DFD8D8"
+        android:textColor="@color/black"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E4DEE4" />
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/log_out"
+        android:layout_margin="15dp"
+        android:text="Log out"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:backgroundTint="#DFD8D8"
+        android:textColor="@color/black"/>
+
+</LinearLayout>

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FormActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnSave">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mainContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:background="#ccc"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="5dp"
+                app:cardMaxElevation="5dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#ccc"
+                    android:padding="10dp">
+
+                    <TextView
+                        android:id="@+id/txtTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="5dp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Title"
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/txtDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Project Id"
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toStartOf="@id/txtTitle"
+                        app:layout_constraintTop_toBottomOf="@+id/txtTitle" />
+
+                    <TextView
+                        android:id="@+id/txtResidental"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Residental"
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toEndOf="@id/txtDescription"
+                        app:layout_constraintTop_toBottomOf="@+id/txtTitle" />
+
+                    <TextView
+                        android:id="@+id/txtAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Residental"
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toStartOf="@id/txtDescription"
+                        app:layout_constraintTop_toBottomOf="@+id/txtDescription" />
+
+
+                    <TextView
+                        android:id="@+id/txtBuilder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:background="@color/white"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Builder : "
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toStartOf="@id/txtAddress"
+                        app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
+
+
+                    <TextView
+                        android:id="@+id/txtComdate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="3dp"
+                        android:background="@color/white"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Comdate : "
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toEndOf="@id/txtBuilder"
+                        app:layout_constraintTop_toBottomOf="@+id/txtAddress" />
+
+                    <TextView
+                        android:id="@+id/txtLaunchDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:background="@color/white"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Launch Date : "
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toStartOf="@id/txtBuilder"
+                        app:layout_constraintTop_toBottomOf="@+id/txtBuilder" />
+
+                    <TextView
+                        android:id="@+id/txtLaunchUnit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="3dp"
+                        android:background="@color/white"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="Launch Date : "
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toEndOf="@id/txtLaunchDate"
+                        app:layout_constraintTop_toBottomOf="@+id/txtBuilder" />
+
+
+                    <TextView
+                        android:id="@+id/txtSqft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginTop="3dp"
+                        android:background="@color/white"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="SqFt : "
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toEndOf="@id/txtLaunchUnit"
+                        app:layout_constraintTop_toBottomOf="@+id/txtBuilder" />
+
+                    <TextView
+                        android:id="@+id/txtFullAddress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:gravity="start"
+                        android:text="Full Address"
+                        android:textColor="@color/black"
+                        android:textSize="12dp"
+                        app:layout_constraintStart_toStartOf="@id/txtLaunchDate"
+                        app:layout_constraintTop_toBottomOf="@+id/txtLaunchDate" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="@+id/mainContainer"
+                app:layout_constraintTop_toBottomOf="@+id/mainContainer"
+                android:layout_margin="10dp"
+                android:weightSum="2"
+                android:id="@+id/llCompDate"
+                android:padding="5dp" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Comp Date:"
+                    android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintStart_toStartOf="@+id/mainContainer"
+                app:layout_constraintTop_toBottomOf="@+id/mainContainer"
+                android:layout_margin="10dp"
+                android:weightSum="2"
+                android:padding="5dp">
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:id="@+id/comb_date_month" />
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_weight="1"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:id="@+id/comb_date_year" />
+
+            </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/llTownshipName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="@+id/llCompDate"
+                app:layout_constraintTop_toBottomOf="@+id/llCompDate"
+                android:layout_margin="10dp"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Township Name : "
+                    android:textStyle="bold"></TextView>
+
+                <EditText
+                    android:id="@+id/etxtTownshipName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Township Name"
+                    android:padding="10dp"></EditText>
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="@+id/llTownshipName"
+                app:layout_constraintTop_toBottomOf="@+id/llTownshipName"
+                android:layout_margin="10dp"
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Construction Slab : "
+                    android:textStyle="bold" />
+
+<!--                <EditText-->
+<!--                    android:id="@+id/etxtConstructionSlab"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:hint="Construction Slab"-->
+<!--                    android:padding="10dp" />-->
+
+                <Spinner
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_margin="10dp"
+                    android:background="@android:drawable/btn_dropdown"
+                    android:id="@+id/construction_slab_drop_down" />
+
+                <Button
+                    android:id="@+id/btnAddImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Image"
+                    android:layout_gravity="center" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rcv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="10dp"
+        android:text="Save"></Button>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

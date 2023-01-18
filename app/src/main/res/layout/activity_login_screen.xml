@@ -1,0 +1,131 @@
+<?xml version = "1.0" encoding = "utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginScreen">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="Login"
+        android:textSize="35dp" />
+
+    <EditText
+        android:id="@+id/editTextUserId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageView"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="46dp"
+        android:focusable="true"
+        android:hint="Enter Name"
+        android:textColorHighlight="#ff7eff15"
+        android:textColorHint="#ffff25e6" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textview"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_launcher_background" />
+
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editTextUserId"
+        android:layout_alignEnd="@+id/editTextUserId"
+        android:layout_alignRight="@+id/editTextUserId"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:ems="10"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:textColorHint="#ffff299f" />
+
+    <TextView
+        android:id="@+id/imei_title"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_below="@+id/editTextPassword"
+        android:gravity="center_vertical"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:text="IMEI Number:"
+        android:textSize="25sp" />
+
+    <TextView
+        android:id="@+id/imei_text"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignTop="@+id/imei_title"
+        android:layout_alignBottom="@+id/imei_title"
+        android:layout_alignParentEnd="true"
+        android:paddingTop="5dp"
+        android:layout_alignParentRight="true"
+        android:layout_toEndOf="@+id/imei_title"
+        android:gravity="start|center_vertical"
+        android:layout_toRightOf="@+id/imei_title"
+        android:text="New text"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imei_text"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:text="Attempts Left:"
+        android:textSize="25dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_toEndOf="@+id/textview"
+        android:layout_toRightOf="@+id/textview"
+        android:text="New Text"
+        android:textSize="25dp" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:text="login" />
+
+    <ProgressBar
+        android:id="@+id/idPBLoading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"/>
+
+</RelativeLayout>

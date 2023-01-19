@@ -1,13 +1,13 @@
 package com.example.crm.utility
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.util.*
 
 object CurrentDateTime {
 
     val currentTime: String
-        get() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")).toString()
+        get() = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
     val currentDate: String
-        get() = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        get() = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date())
 }

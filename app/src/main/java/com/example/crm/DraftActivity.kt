@@ -55,9 +55,8 @@ class DraftActivity : AppCompatActivity(), PendingAdapter.ItemClickListner {
     }
 
     override fun onMapButtonClicked(item: DraftListModel) {
-
-        if (item.Lat != null && item.Long != null) {
-            val mapUrl = Urls.getMapLink(this, item.Lat, item.Long)
+        if ((item.Lat != null && item.Long != null) || (item.Lat != 0.0 && item.Long != 0.0)) {
+            val mapUrl = Urls.getMapLink(this, item.Lat!!, item.Long!!)
             val uri = Uri.parse(mapUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)

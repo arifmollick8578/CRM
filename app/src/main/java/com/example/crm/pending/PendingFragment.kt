@@ -26,10 +26,9 @@ import com.example.crm.databinding.FragmentPendingBinding
 import com.example.crm.model.DraftListModel
 import com.example.crm.preferences.IPreferenceHelper
 import com.example.crm.preferences.PreferenceManager
+import com.example.crm.utility.CurrentDateTime
 import com.example.crm.utility.Urls
 import com.google.android.material.snackbar.Snackbar
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -68,7 +67,7 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
             credential = credential,
             imeiNo = preferenceHelper.getImeiNo(),
             userId = preferenceHelper.getUserId(),
-            lastSyncTime = getCurrentDate(),
+            lastSyncTime = CurrentDateTime.currentDate,
             dataGroup = "2"
         )
         pendingViewModel.getPendingList(pendingRequest)
@@ -95,13 +94,6 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
         }
 
         return root
-    }
-
-
-    private fun getCurrentDate(): String {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        val current = LocalDateTime.now().format(formatter)
-        return current
     }
 
     private fun initObserver() {
@@ -255,8 +247,8 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
     }
 
     override fun onMapButtonClicked(item: DraftListModel) {
-        if (item.Lat != null && item.Long != null) {
-            val mapUrl = Urls.getMapLink(context?.applicationContext!!, item.Lat, item.Long)
+        if ((item.Lat != null && item.Long != null) || (item.Lat != 0.0 && item.Long != 0.0)) {
+            val mapUrl = Urls.getMapLink(context?.applicationContext!!, item.Lat!!, item.Long!!)
             val uri = Uri.parse(mapUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)

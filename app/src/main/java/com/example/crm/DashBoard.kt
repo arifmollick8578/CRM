@@ -1,6 +1,6 @@
 package com.example.crm
 
-import android.content.DialogInterface
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -25,8 +25,10 @@ import com.example.crm.model.UserLocation
 import com.example.crm.pending.PendingViewModel
 import com.example.crm.preferences.IPreferenceHelper
 import android.location.LocationListener
+import android.net.ConnectivityManager
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.core.content.getSystemService
 import androidx.work.*
 import androidx.work.WorkInfo.State
 import com.example.crm.permission.CheckPermission
@@ -36,6 +38,7 @@ import com.example.crm.preferences.PreferenceManager
 import com.example.crm.utility.CurrentDateTime
 import com.example.crm.worker.LocationWorker
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import java.time.Duration
 
 class DashBoard : AppCompatActivity(), LocationListener {
@@ -46,6 +49,7 @@ class DashBoard : AppCompatActivity(), LocationListener {
     private val preferenceHelper: IPreferenceHelper by lazy { PreferenceManager(applicationContext) }
     private var locationWorker = WorkManager.getInstance(this)
     private lateinit var locationManager: LocationManager
+    private lateinit var connectivityManager: ConnectivityManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +60,8 @@ class DashBoard : AppCompatActivity(), LocationListener {
         setSupportActionBar(binding.appBarDashBoard.toolbar)
         pendingViewModel = ViewModelProvider(this)[PendingViewModel::class.java].apply {
             allLocationData.observe(this@DashBoard) {
-                startWorker(it)
+                // Will implement worker
+//                startWorker(it)
             }
         }
 
@@ -151,7 +156,10 @@ class DashBoard : AppCompatActivity(), LocationListener {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            saveLocationData()
+           if ( !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    this.showDialogToAccessGps()
+           }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this@DashBoard)
         }
     }
 
@@ -172,8 +180,22 @@ class DashBoard : AppCompatActivity(), LocationListener {
         }
     }
 
+    override fun onProviderDisabled(provider: String) {
+        Snackbar.make(binding.root, "Please turn on location.", Snackbar.LENGTH_LONG).show()
+        this.showDialogToAccessGps()
+    }
+
+    override fun onProviderEnabled(provider: String) {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this@DashBoard)
+    }
 
     override fun onLocationChanged(location: Location) {
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         pendingViewModel.insertUserLocation(getUserLocation(location.latitude, location.longitude))
+
+        if (connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnected) {
+            pendingViewModel.startPostingLocationData()
+            Snackbar.make(binding.root, "Location data posted to API", Snackbar.LENGTH_LONG).show()
+        }
     }
 }

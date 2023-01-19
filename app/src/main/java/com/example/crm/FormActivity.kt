@@ -42,6 +42,8 @@ import com.example.crm.utility.FileTypeConverter
 import retrofit.RetrofitInstance
 import retrofit2.Call
 import android.location.LocationListener
+import com.example.crm.permission.CheckPermission.Companion.showDialogToAccessGps
+import com.google.android.material.snackbar.Snackbar
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
@@ -59,7 +61,8 @@ class FormActivity : AppCompatActivity(), LocationListener {
     private var imageDetailsList = ArrayList<ImageDetails>()
     private var imageIdWithBitmapArray = ArrayList<Int>()
     private lateinit var adapter: ImageAdapter
-    private var locationInfo: Pair<Double, Double> = Pair(0.0, 0.0)
+    private var locationInfo: Pair<Double, Double>? = null
+    private var isSaveButtonClicked: Boolean = false
 
     private lateinit var locationManager: LocationManager
 
@@ -119,51 +122,9 @@ class FormActivity : AppCompatActivity(), LocationListener {
             pendingViewModel.updatesAllImagesByProjectId(this?.ProjectId!!)
         }
         binding.btnSave.setOnClickListener {
+            isSaveButtonClicked = true
             Log.d("BugInfo", "locationInfo: $locationInfo. vm: ${pendingViewModel.currentLocation.value}")
-            when (draftListModel?.isPending) {
-                true -> {
-                    adapter.getImageDetailsList().forEach {
-                        if (it.latitude == 0.0 || it.longitudes == 0.0) {
-                            if (locationInfo.first != 0.0 && locationInfo.second != 0.0) {
-                                it.latitude = locationInfo.first
-                                it.longitudes = locationInfo.second
-                            }
-                        }
-                        pendingViewModel.uploadImage(it)
-                    }
-
-                    draftListModel?.ProjectId?.let { it1 ->
-                        pendingViewModel.updateDraft(
-                            isPending = false,
-                            projectId = it1,
-                            townshipName = binding.etxtTownshipName.text.toString(),
-                            constructionSlab = binding.constructionSlabDropDown.selectedItem.toString(),
-                            compDate = "${binding.combDateMonth.selectedItem}-${binding.combDateYear.selectedItem}",
-                            latitude = locationInfo.first,
-                            longitude = locationInfo.second
-                        )
-                    }
-                }
-                false -> {
-                    draftListModel?.ProjectId?.let { it1 ->
-                        pendingViewModel.updateDraft(
-                            isPending = false,
-                            projectId = it1,
-                            townshipName = binding.etxtTownshipName.text.toString(),
-                            constructionSlab = binding.constructionSlabDropDown.selectedItem.toString(),
-                            compDate = "${binding.combDateMonth}-${binding.combDateYear}",
-                            latitude = locationInfo.first,
-                            longitude = locationInfo.second
-                        )
-                    }
-                    pendingViewModel.postPendingDetails(draftListModel?.ProjectId!!)
-                    // API call and send data to client
-                }
-                null -> {
-                    // Check if projectId is available or not.
-                }
-            }
-            finish()
+            onSaveButtonClicked()
         }
         binding.btnAddImage.setOnClickListener {
             checkLocationPermission()
@@ -182,6 +143,54 @@ class FormActivity : AppCompatActivity(), LocationListener {
             val alert: AlertDialog = builder.create()
             alert.show()
         }
+    }
+
+    private fun onSaveButtonClicked() {
+        when (draftListModel?.isPending) {
+            true -> {
+                adapter.getImageDetailsList().forEach {
+                    if (it.latitude == 0.0 || it.longitudes == 0.0) {
+                        if (locationInfo?.first != 0.0 && locationInfo?.second != 0.0) {
+                            it.latitude = locationInfo?.first
+                            it.longitudes = locationInfo?.second
+                        }
+                    }
+                    pendingViewModel.uploadImage(it)
+                }
+
+                draftListModel?.ProjectId?.let { it1 ->
+                    pendingViewModel.updateDraft(
+                        isPending = false,
+                        projectId = it1,
+                        townshipName = binding.etxtTownshipName.text.toString(),
+                        constructionSlab = binding.constructionSlabDropDown.selectedItem.toString(),
+                        compDate = "${binding.combDateMonth.selectedItem}-${binding.combDateYear.selectedItem}",
+                        latitude = locationInfo?.first,
+                        longitude = locationInfo?.second
+                    )
+                }
+            }
+            false -> {
+                draftListModel?.ProjectId?.let { it1 ->
+                    pendingViewModel.updateDraft(
+                        isPending = false,
+                        projectId = it1,
+                        townshipName = binding.etxtTownshipName.text.toString(),
+                        constructionSlab = binding.constructionSlabDropDown.selectedItem.toString(),
+                        compDate = "${binding.combDateMonth}-${binding.combDateYear}",
+                        latitude = locationInfo?.first,
+                        longitude = locationInfo?.second
+                    )
+                }
+                pendingViewModel.postPendingDetails(draftListModel?.ProjectId!!)
+                // API call and send data to client
+            }
+            null -> {
+                // Check if projectId is available or not.
+            }
+        }
+        Snackbar.make(binding.root, "Data saved to local database.", Snackbar.LENGTH_LONG).show()
+        finish()
     }
 
     private fun findLatLong() {
@@ -220,9 +229,9 @@ class FormActivity : AppCompatActivity(), LocationListener {
 
                 var lat = it.latitude
                 var long = it.longitudes
-                if (locationInfo.first != 0.0 && locationInfo.second != 0.0) {
-                    lat = locationInfo.first
-                    long = locationInfo.second
+                if (locationInfo?.first != 0.0 && locationInfo?.second != 0.0) {
+                    lat = locationInfo?.first
+                    long = locationInfo?.second
                 }
 
                 val imageRequestDetails = ImageRequestDetails(
@@ -348,8 +357,8 @@ class FormActivity : AppCompatActivity(), LocationListener {
             imageName = "$projectId.png",
             imageString = "$projectId",
             imageType = "P",
-            latitude = locationInfo.first,
-            longitudes = locationInfo.second,
+            latitude = locationInfo?.first,
+            longitudes = locationInfo?.second,
             imageTime = CurrentDateTime.currentTime,
             userId = "user",
             imageDate = CurrentDateTime.currentDate,
@@ -552,6 +561,15 @@ class FormActivity : AppCompatActivity(), LocationListener {
     override fun onLocationChanged(location: Location) {
         Log.d("BugInfo", "Form activity: lat: ${location.latitude}")
         locationInfo = Pair(location.latitude, location.longitude)
+    }
+
+    override fun onProviderDisabled(provider: String) {
+        Snackbar.make(binding.root, "Please turn on location.", Snackbar.LENGTH_LONG).show()
+        this.showDialogToAccessGps()
+    }
+
+    override fun onProviderEnabled(provider: String) {
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this@FormActivity)
     }
 
     companion object {

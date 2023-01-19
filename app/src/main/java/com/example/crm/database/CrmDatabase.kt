@@ -5,16 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.crm.model.DraftListModel
 import com.example.crm.model.ImageDetails
+import com.example.crm.model.ProjectData
 import com.example.crm.model.UserLocation
 import com.example.crm.utility.FileTypeConverter
 
 @Database(
-    entities = [DraftListModel::class, ImageDetails::class, UserLocation::class],
-    version = 4,                // <- Database version
+    entities = [ProjectData::class, ImageDetails::class, UserLocation::class],
+    version = 5,                // <- Database version
     exportSchema = false,
-    )
+)
 @TypeConverters(FileTypeConverter::class)
 abstract class CrmDatabase : RoomDatabase() {
 
@@ -28,7 +28,7 @@ abstract class CrmDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: CrmDatabase? = null
 
-        fun getDatabase(context: Context): CrmDatabase{
+        fun getDatabase(context: Context): CrmDatabase {
             val tempInstance = INSTANCE
 
             if (tempInstance != null) {

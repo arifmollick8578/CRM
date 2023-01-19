@@ -10,17 +10,18 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LoginViewModel : ViewModel() {
-
-    private var loginLiveDashBoard = MutableLiveData<LoginResponse>()
+    private var _loginResponse = MutableLiveData<LoginResponse>()
+    val loginResponse: LiveData<LoginResponse> = _loginResponse
 
     private var _shouldLogOut = MutableLiveData<Boolean>(false)
     val shouldLogOut: LiveData<Boolean> = _shouldLogOut
-    fun postLogin(loginRequest: LoginRequest) {
+
+    fun postLoginRequest(loginRequest: LoginRequest) {
         RetrofitInstance.api.postLogin(loginRequest)
             .enqueue(object  : Callback<LoginResponse> {
                 override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                     if (response.body()!=null){
-                        loginLiveDashBoard.value = response.body()
+                        _loginResponse.value = response.body()
                         Log.d("TAG",response.body().toString())
                     }
                     else{
@@ -31,9 +32,6 @@ class LoginViewModel : ViewModel() {
                     Log.d("TAG",t.message.toString())
                 }
             })
-    }
-    fun observeLoginResponseData() : LiveData<LoginResponse> {
-        return loginLiveDashBoard
     }
 
     fun logOutAccount() {

@@ -9,9 +9,7 @@ import android.view.View.OnTouchListener
 import kotlin.math.abs
 
 
-/**
- * Detects left and right swipes across a view.
- */
+// Not working for now, slide left to open map button on draft list
 open class OnSwipeTouchListener(context: Context?) : OnTouchListener {
     private val gestureDetector: GestureDetector
 

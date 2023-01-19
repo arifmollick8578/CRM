@@ -2,7 +2,7 @@ package com.example.crm
 
 data class LoginRequest(
     val credential: CredentialRequest,
-    val IMEINo: String?,
+    val imeiNo: String?,
     val userId: String,
-    val Password: String
+    val password: String
 )

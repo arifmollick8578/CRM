@@ -5,7 +5,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
-import java.util.Base64
 
 @Parcelize
 @Entity(tableName = "image_table")
@@ -25,7 +24,7 @@ data class ImageDetails(
     val createdBy: String?,
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     val images: ByteArray?
-): Parcelable
+) : Parcelable
 
 data class ImageRequestDetails(
     val imageId: Int?,

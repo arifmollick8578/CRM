@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "location_table")
-data class UserLocation (
+data class UserLocation(
     @PrimaryKey
     val trackTime: String,
     val appId: String?,

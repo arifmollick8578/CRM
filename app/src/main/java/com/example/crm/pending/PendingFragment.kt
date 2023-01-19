@@ -1,13 +1,9 @@
 package com.example.crm.pending
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
-import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,26 +11,25 @@ import android.view.ViewGroup
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.crm.*
+import com.example.crm.CredentialRequest
+import com.example.crm.DraftActivity
+import com.example.crm.FormActivity
+import com.example.crm.FormActivity.Companion.FORM_ACTIVITY_EXTRA
 import com.example.crm.databinding.FragmentPendingBinding
-import com.example.crm.model.DraftListModel
+import com.example.crm.model.ProjectData
 import com.example.crm.preferences.IPreferenceHelper
 import com.example.crm.preferences.PreferenceManager
 import com.example.crm.utility.CurrentDateTime
 import com.example.crm.utility.Urls
+import com.example.crm.utility.getDeviceId
 import com.google.android.material.snackbar.Snackbar
 import java.util.*
-import kotlin.collections.ArrayList
 
-class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
-
-
+class PendingFragment : Fragment(), PendingListAdapter.ItemClickListener {
     private var _binding: FragmentPendingBinding? = null
     private val preferenceHelper: IPreferenceHelper by lazy { PreferenceManager(activity!!.applicationContext) }
 
@@ -42,27 +37,34 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
     // onDestroyView.
     private val binding get() = _binding!!
     private lateinit var pendingViewModel: PendingViewModel
-    private var pendingList = ArrayList<DraftListModel>()
-    private lateinit var pendingAdapter: PendingAdapter
+    private var pendingList = ArrayList<ProjectData>()
+    private lateinit var pendingListAdapter: PendingListAdapter
     private var imei: String? = null
-
-    // in the below line, we are creating variables.
-    private val REQUEST_CODE = 101
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
+    ): View {
         _binding = FragmentPendingBinding.inflate(inflater, container, false)
         val root: View = binding.root
-        pendingViewModel = ViewModelProvider(this)[PendingViewModel::class.java]
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        pendingViewModel = ViewModelProvider(this)[PendingViewModel::class.java].apply {
+            pendingListLiveData.observe(viewLifecycleOwner) {
+                onPendingListResponseUpdated(it)
+                getAllData()
+            }
+        }
 
         pendingList = ArrayList()
         binding.pendingRcv.layoutManager = LinearLayoutManager(activity)
-        pendingAdapter = PendingAdapter(this,pendingList)
-        binding.pendingRcv.adapter = pendingAdapter
-        val credential = CredentialRequest(UserId = "Test", Password = "test@4321")
+        pendingListAdapter = PendingListAdapter(this, pendingList)
+        binding.pendingRcv.adapter = pendingListAdapter
+        // +1 have doubt
+        val credential = CredentialRequest(userId = "Test", password = "test@4321")
         val pendingRequest = PendingRequest(
             credential = credential,
             imeiNo = preferenceHelper.getImeiNo(),
@@ -71,93 +73,58 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
             dataGroup = "2"
         )
         pendingViewModel.getPendingList(pendingRequest)
-        initObserver()
-
-        binding.etxtSearch.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
-            androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(msg: String): Boolean {
-                // inside on query text change method we are
-                // calling a method to filter our recycler view.
-                filter(msg)
-                return false
-            }
-        })
-
-        binding.btnDraft.setOnClickListener {
-
-            val intent = Intent(activity,DraftActivity::class.java)
-            startActivity(intent)
-        }
-
-        return root
-    }
-
-    private fun initObserver() {
-
-        pendingViewModel.observePendingResponseData().observe(viewLifecycleOwner, Observer {
-            if (it != null) {
-                for (i in it.GetProjectForSurveyResult) {
-                    val dlm = DraftListModel(
-                        Address = i.Address,
-                        AssignDate = i.AssignDate,
-                        AssignDateText = i.AssignDateText,
-                        Builder = i.Builder,
-                        City = i.City,
-                        Colony = i.Colony,
-                        CompDate = i.CompDate,
-                        Constructionslab = i.Constructionslab,
-                        Lat = i.Lat,
-                        LaunchDate = i.LaunchDate,
-                        LaunchSqft = i.LaunchSqft,
-                        LaunchUnit = i.LaunchUnit,
-                        Long = i.Long,
-                        ProjectId = i.ProjectId,
-                        ProjectName = i.ProjectName,
-                        ProjectSubType = i.ProjectSubType,
-                        ProjectType = i.ProjectType,
-                        Region = i.Region,
-                        TownshipName = i.TownshipName,
-                        TransId = i.TransId,
-                        Remark = null,
-                        isPending = true
-                    )
-                    insertDataToDb(dlm)
+        binding.etxtSearch.setOnQueryTextListener(
+            object : SearchView.OnQueryTextListener,
+                androidx.appcompat.widget.SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(p0: String?): Boolean {
+                    return false
                 }
 
-                getAllData()
+                override fun onQueryTextChange(msg: String): Boolean {
+                    // inside on query text change method we are
+                    // calling a method to filter our recycler view.
+                    filter(msg)
+                    return false
+                }
+            })
 
-            }
-        })
-
-    }
-
-
-    fun getDeviceId(context: Context?): String? {
-        val deviceId: String
-        deviceId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Settings.Secure.getString(
-                context?.getContentResolver(),
-                Settings.Secure.ANDROID_ID
-            )
-        } else {
-            val mTelephony =
-                context?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (mTelephony.deviceId != null) {
-                mTelephony.deviceId
-            } else {
-                Settings.Secure.getString(
-                    context?.getContentResolver(),
-                    Settings.Secure.ANDROID_ID
-                )
-            }
+        binding.btnDraft.setOnClickListener {
+            val intent = Intent(activity, DraftActivity::class.java)
+            startActivity(intent)
         }
-        return deviceId
     }
 
+    private fun onPendingListResponseUpdated(projectListResponse: ProjectListResponse) {
+        projectListResponse.projectDataByServer.forEach { responseData ->
+            val projectData = ProjectData(
+                address = responseData.address,
+                assignDate = responseData.assignDate,
+                assignDateText = responseData.assignDateText,
+                builder = responseData.builder,
+                city = responseData.city,
+                colony = responseData.colony,
+                compDate = responseData.compDate,
+                constructionSlab = responseData.constructionSlab,
+                latitude = responseData.latitude,
+                launchDate = responseData.launchDate,
+                launchSqFt = responseData.launchSqFt,
+                launchUnit = responseData.launchUnit,
+                longitude = responseData.longitude,
+                projectId = responseData.projectId,
+                projectName = responseData.projectName,
+                projectSubType = responseData.projectSubType,
+                projectType = responseData.projectType,
+                region = responseData.region,
+                townshipName = responseData.townshipName,
+                transactionId = responseData.transactionId,
+                remark = null,
+                isPending = true
+            )
+
+            // +1 have doubt about this
+            insertDataToDb(projectData)
+        }
+    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -165,95 +132,95 @@ class PendingFragment : Fragment(), PendingAdapter.ItemClickListner{
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        if (requestCode == REQUEST_CODE) {
-            // in the below line, we are checking if permission is granted.
+        if (requestCode == READ_PHONE_STATE_PERMISSION) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // if permissions are granted we are displaying below toast message.
-                showToast("Permission granted.")
-                imei = getDeviceId(activity?.applicationContext)
-                Log.d("TAG", imei.toString())
+                Log.d("TAG", "Read phone state permission granted.")
+                imei = context?.getDeviceId()
+                Log.d("TAG", "IMEI number: ${imei.toString()}")
             } else {
-                // in the below line, we are displaying toast message if permissions are not granted.
-                showToast("Permission denied. Please go to setting and provide permission")
+                Log.d("TAG", "Reading phone state permission denied.")
             }
         }
     }
 
-    private fun showToast(passedString: String) {
-        Toast.makeText(activity?.applicationContext, passedString, Toast.LENGTH_SHORT)
-            .show()
-    }
-
     private fun filter(text: String) {
-        val filteredlist: ArrayList<DraftListModel> = ArrayList()
+        val filteredList: ArrayList<ProjectData> = ArrayList()
 
         // running a for loop to compare elements.
         for (item in pendingList) {
             // checking if the entered string matched with any item of our recycler view.
-            if (item.Colony?.lowercase(Locale.ROOT)
+            if (item.colony?.lowercase(Locale.ROOT)
                     ?.contains(text.lowercase(Locale.ROOT)) == true
             ) {
                 // if the item is matched we are
                 // adding it to our filtered list.
-                filteredlist.add(item)
+                filteredList.add(item)
             }
         }
-        if (filteredlist.isEmpty()) {
+        if (filteredList.isEmpty()) {
             // if no item is added in filtered list we are
             // displaying a toast message as no data found.
-            Toast.makeText(activity?.applicationContext, "No Data Found..", Toast.LENGTH_SHORT)
-                .show()
+            Snackbar.make(binding.root, "No Data Found.", Snackbar.LENGTH_SHORT).show()
         } else {
             // at last we are passing that filtered
             // list to our adapter class.
-            pendingAdapter.filterList(filteredlist)
+            pendingListAdapter.filterList(filteredList)
         }
     }
 
-
-    private fun insertDataToDb(draftListModel: DraftListModel) {
-
-        pendingViewModel.getAllDataByProjectList(draftListModel.ProjectId)
-
-        pendingViewModel.getAllDataByProjectIdMutable.observe(viewLifecycleOwner, Observer {
-            if(it==null){
-                pendingViewModel.insertDraft(draftListModel)
-            }else if(it.isEmpty()){
-                pendingViewModel.insertDraft(draftListModel)
+    private fun insertDataToDb(projectData: ProjectData) {
+        pendingViewModel.getAllDataByProjectList(projectData.projectId)
+        pendingViewModel.allProjectDataListByProjectId.observe(viewLifecycleOwner) {
+            if (it == null) {
+                pendingViewModel.insertProjectData(projectData)
+            } else if (it.isEmpty()) {
+                pendingViewModel.insertProjectData(projectData)
             }
-        })
+        }
     }
 
     private fun getAllData() {
-        pendingViewModel.getAllData.observe(viewLifecycleOwner, Observer {
-            if (!it.isNullOrEmpty()) {
-                binding.btnDraft.text = "Draft ${it.filter { !it.isPending }.size}"
+        pendingViewModel.projectDataList.observe(viewLifecycleOwner) { projectData ->
+            Log.d("TAG", "Project data updated: ${projectData.size}")
+            if (!projectData.isNullOrEmpty()) {
+                binding.btnDraft.text = "Draft: ${projectData.filter { !it.isPending }.size}"
                 pendingList.clear()
-                pendingList.addAll(it.filter { it.isPending })
-                Log.d("TAG", "List : $pendingList")
-                pendingAdapter.notifyDataSetChanged()
+                pendingList.addAll(projectData.filter { it.isPending })
+                Log.d("TAG", "Project list with size: ${pendingList.size}")
+                pendingListAdapter.notifyDataSetChanged()
             } else {
-                Toast.makeText(activity, "No Data Found", Toast.LENGTH_SHORT).show()
+                Log.d("TAG", "No data found.")
             }
-        })
+        }
     }
 
-    override fun onItemClicked(draftList: DraftListModel) {
-        Log.d("BugInfo", "draftList: ${draftList.ProjectId}")
-        val intent = Intent(activity,FormActivity::class.java)
-        intent.putExtra("dto",draftList)
+    override fun onItemClicked(projectData: ProjectData) {
+        Log.d(
+            "TAG",
+            "ProjectData with id: ${projectData.projectId} and title: ${projectData.projectName} clicked."
+        )
+        val intent = Intent(activity, FormActivity::class.java)
+        intent.putExtra(FORM_ACTIVITY_EXTRA, projectData)
         startActivity(intent)
     }
 
-    override fun onMapButtonClicked(item: DraftListModel) {
-        if ((item.Lat != null && item.Long != null) || (item.Lat != 0.0 && item.Long != 0.0)) {
-            val mapUrl = Urls.getMapLink(context?.applicationContext!!, item.Lat!!, item.Long!!)
+    override fun onMapButtonClicked(projectData: ProjectData) {
+        if ((projectData.latitude != null && projectData.longitude != null) && (projectData.latitude != 0.0 && projectData.longitude != 0.0)) {
+            val mapUrl = Urls.getMapRedirectUrl(
+                projectData.latitude,
+                projectData.longitude,
+                projectData.projectName!!
+            )
             val uri = Uri.parse(mapUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         } else {
-            Snackbar.make(binding.root, "Latitude or Longitude not found", Snackbar.LENGTH_LONG).show()
+            Snackbar.make(binding.root, "Latitude or Longitude not found", Snackbar.LENGTH_LONG)
+                .show()
         }
+    }
+
+    companion object {
+        private const val READ_PHONE_STATE_PERMISSION = 101
     }
 }

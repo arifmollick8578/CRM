@@ -10,21 +10,20 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.crm.databinding.ActivityLoginScreenBinding
 import com.example.crm.preferences.IPreferenceHelper
 import com.example.crm.preferences.PreferenceManager
+import com.example.crm.utility.getDeviceId
+import com.google.android.material.snackbar.Snackbar
 
 
 class LoginScreen : AppCompatActivity() {
     private lateinit var binding: ActivityLoginScreenBinding
 
     // in the below line, we are creating variables.
-    private val REQUEST_CODE = 101
     private var imei: String? = null
     private lateinit var loginViewModel: LoginViewModel
     private val preferenceHelper: IPreferenceHelper by lazy { PreferenceManager(applicationContext) }
@@ -33,10 +32,6 @@ class LoginScreen : AppCompatActivity() {
         binding = ActivityLoginScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
         loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java]
-
-        // in the below line, we are initializing our variables.
-        val telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-
         // in the below line, we are checking for permissions
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -49,81 +44,66 @@ class LoginScreen : AppCompatActivity() {
                 arrayOf(Manifest.permission.READ_PHONE_STATE),
                 REQUEST_CODE
             )
-        } else{
-            imei = getDeviceId(applicationContext)
+        } else {
+            imei = applicationContext.getDeviceId()
         }
-
         binding.imeiText.text = "$imei"
-
         // in the below line, we are setting our imei to our text view.
-
         if(preferenceHelper.getIsLogin()){
             val intent = Intent(this, DashBoard::class.java)
             startActivity(intent)
         }
 
-        initalizeClickListner()
+        binding.button.setOnClickListener { onLogInButtonClicked() }
 
-
-        initObserver()
-
-        loginViewModel.shouldLogOut.observeForever {
-            Log.d("BugInfo", "Observer called on login screen.")
-            if (it) {
-//                preferenceHelper.setUserId("")
-//                preferenceHelper.setImeiNo("")
-//                preferenceHelper.setIsLogin(false)
-                preferenceHelper.clearPrefs()
-                Log.d("BugInfo", "user: ${preferenceHelper.getUserId()}..imei: ${preferenceHelper.getImeiNo()}.. isLogIn: ${preferenceHelper.getIsLogin()}")
-
-            }
+        loginViewModel.loginResponse.observe(this) {
+            onLogInResponseDataChanged(it)
         }
 
+        loginViewModel.shouldLogOut.observeForever {
+            Log.d("TAG", "Observer called to logout session.")
+            if (it) {
+                preferenceHelper.resetLogInData()
+            }
+        }
     }
 
-    private fun initObserver() {
-        loginViewModel.observeLoginResponseData().observe(this, Observer {
-            if(it.AuthenticateUserResult.IMEINo == null){
+    private fun onLogInResponseDataChanged(loginResponse: LoginResponse) {
+            if(loginResponse.authenticateUserResult.iMEINo == null){
                 binding.idPBLoading.visibility = View.GONE
-                showToast("Please use the correct mobile phone for login")
-            }else if(it.AuthenticateUserResult.IMEINo == imei){
-                if(it.AuthenticateUserResult.UserId != binding.editTextUserId.text.toString()){
+                Snackbar.make(binding.root, "Please use the correct mobile phone for login", Snackbar.LENGTH_LONG).show()
+            }else if(loginResponse.authenticateUserResult.iMEINo == imei){
+                if(loginResponse.authenticateUserResult.userId != binding.editTextUserId.text.toString()){
                     binding.idPBLoading.visibility = View.GONE
-                    showToast("Please enter correct user id")
-                }else if(it.AuthenticateUserResult.Password != binding.editTextPassword.text.toString()){
+                    Snackbar.make(binding.root, "Please enter correct user id", Snackbar.LENGTH_LONG).show()
+                }else if(loginResponse.authenticateUserResult.password != binding.editTextPassword.text.toString()){
                     binding.idPBLoading.visibility = View.GONE
-                    showToast("Please enter correct password")
+                    Snackbar.make(binding.root, "Please enter correct password", Snackbar.LENGTH_LONG).show()
                 }else{
                     binding.idPBLoading.visibility = View.GONE
-                    preferenceHelper.setUserId(it.AuthenticateUserResult.UserId)
-                    preferenceHelper.setImeiNo(it.AuthenticateUserResult.IMEINo)
+                    preferenceHelper.setUserId(loginResponse.authenticateUserResult.userId)
+                    preferenceHelper.setImeiNo(loginResponse.authenticateUserResult.iMEINo)
                     preferenceHelper.setIsLogin(true)
                     val intent = Intent(this, DashBoard::class.java)
                     startActivity(intent)
                 }
             }
-        })
     }
 
-
-
-    private fun initalizeClickListner() {
-        binding.button.setOnClickListener {
+    private fun onLogInButtonClicked() {
             if (binding.editTextUserId.text.isNotEmpty() && binding.editTextPassword.text.isNotEmpty()) {
                 binding.idPBLoading.visibility = View.VISIBLE
-                val credential = CredentialRequest(UserId = "Test", Password = "test@4321")
+                val credential = CredentialRequest(userId = "Test", password = "test@4321")
                 val loginRequest = LoginRequest(
                     credential = credential,
-                    IMEINo = imei,
+                    imeiNo = imei,
                     userId = binding.editTextUserId.text.toString(),
-                    Password = binding.editTextPassword.text.toString()
+                    password = binding.editTextPassword.text.toString()
                     )
-                loginViewModel.postLogin(loginRequest)
+                loginViewModel.postLoginRequest(loginRequest)
             } else {
-                showToast("Please put correct user id and password")
+                Snackbar.make(binding.root, "Please put correct user id and password", Snackbar.LENGTH_LONG).show()
             }
-
-        }
     }
 
     /**
@@ -138,44 +118,21 @@ class LoginScreen : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (requestCode == REQUEST_CODE) {
             // in the below line, we are checking if permission is granted.
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // if permissions are granted we are displaying below toast message.
-                showToast("Permission granted.")
-                imei = getDeviceId(applicationContext)
-                Log.d("TAG",imei.toString())
+                Log.d("TAG", "Reading phone status permission granted.")
+                imei = applicationContext.getDeviceId()
+                Log.d("TAG", imei.toString())
             } else {
                 // in the below line, we are displaying toast message if permissions are not granted.
-                showToast("Permission denied. Please go to setting and provide permission")
+                Log.d("TAG", "Reading phone status permission denied. Please go to setting and provide permission")
             }
         }
     }
 
-    private fun showToast(passedString : String){
-        Toast.makeText(this, passedString, Toast.LENGTH_SHORT)
-            .show()
-    }
-
-    fun getDeviceId(context: Context): String? {
-        val deviceId: String
-        deviceId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ANDROID_ID
-            )
-        } else {
-            val mTelephony = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            if (mTelephony.deviceId != null) {
-                mTelephony.deviceId
-            } else {
-                Settings.Secure.getString(
-                    context.getContentResolver(),
-                    Settings.Secure.ANDROID_ID
-                )
-            }
-        }
-        return deviceId
+    companion object {
+        private const val REQUEST_CODE = 101
     }
 }

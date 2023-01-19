@@ -8,7 +8,6 @@ import com.example.crm.model.UserLocation
 
 @Dao
 interface UserLocationDao {
-
     @Insert
     suspend fun insertLocation(userLocation: UserLocation)
 

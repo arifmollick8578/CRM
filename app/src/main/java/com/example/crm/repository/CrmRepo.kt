@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import com.example.crm.database.DraftDao
 import com.example.crm.database.ImageDao
 import com.example.crm.database.UserLocationDao
-import com.example.crm.model.DraftListModel
+import com.example.crm.model.ProjectData
 import com.example.crm.model.ImageDetails
 import com.example.crm.model.UserLocation
 
@@ -15,7 +15,9 @@ class CrmRepo(
     private val locationDao: UserLocationDao
     ) {
 
-    val getAllData: LiveData<List<DraftListModel>> = draftDao.getAllData()
+    fun getAllProjectData(): LiveData<List<ProjectData>> {
+        return draftDao.getAllData()
+    }
 
     suspend fun deleteImageDetailsForProjectId(projectId: String) {
         imageDao.deleteImageDetailsByProjectId(projectId)
@@ -47,22 +49,20 @@ class CrmRepo(
         imageDao.resetAll()
     }
 
-    suspend fun getAllResetAbleData(): List<DraftListModel> {
+    suspend fun getAllResetAbleData(): List<ProjectData> {
         return draftDao.getResetAbleData()
     }
 
-    suspend fun deleteDraftListModel(draftListModel: DraftListModel) {
-        draftDao.deleteListModel(draftListModel)
+    suspend fun deleteDraftListModel(projectData: ProjectData) {
+        draftDao.deleteListModel(projectData)
     }
 
-    suspend fun getAllDataByProjectid(projectid: String): LiveData<List<DraftListModel>>? {
-        val draftListByProjectId: LiveData<List<DraftListModel>>
-        draftListByProjectId = draftDao.getAllDataByProjectId(projectid)
-        return draftListByProjectId
+    suspend fun getAllDataByProjectId(projectId: String): LiveData<List<ProjectData>>? {
+        return draftDao.getAllDataByProjectId(projectId)
     }
 
-    suspend fun insertDraft(draftListModel: DraftListModel) {
-        draftDao.insertDraft(draftListModel)
+    suspend fun insertProjectData(projectData: ProjectData) {
+        draftDao.insertDraft(projectData)
     }
 
     suspend fun updateDraftByProjectId(

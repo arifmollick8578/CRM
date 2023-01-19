@@ -4,13 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 
 open class PreferenceManager constructor(context: Context) : IPreferenceHelper {
-    private val PREFS_NAME = "SharedPreferenceDemo"
     private var preferences: SharedPreferences
 
     init {
         preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
-
 
     override fun setUserId(userId: String) {
         preferences[USER_ID] = userId
@@ -29,7 +27,6 @@ open class PreferenceManager constructor(context: Context) : IPreferenceHelper {
     }
 
 
-
     override fun clearPrefs() {
         preferences.edit().clear().apply()
     }
@@ -38,7 +35,7 @@ open class PreferenceManager constructor(context: Context) : IPreferenceHelper {
         preferences[IS_LOGIN] = isLogin
     }
 
-    override fun getIsLogin() : Boolean {
+    override fun getIsLogin(): Boolean {
         return preferences[IS_LOGIN] ?: false
     }
 
@@ -52,6 +49,7 @@ open class PreferenceManager constructor(context: Context) : IPreferenceHelper {
         const val USER_ID = "user_id"
         const val IMEI_NO = "imei_no"
         const val IS_LOGIN = "is_login"
+        private const val PREFS_NAME = "SharedPreferenceDemo"
     }
 }
 

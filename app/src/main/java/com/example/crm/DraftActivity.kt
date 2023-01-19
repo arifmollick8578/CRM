@@ -12,51 +12,47 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.crm.databinding.ActivityDraftBinding
-import com.example.crm.model.DraftListModel
-import com.example.crm.pending.PendingAdapter
+import com.example.crm.model.ProjectData
+import com.example.crm.pending.PendingListAdapter
 import com.example.crm.pending.PendingViewModel
 import com.example.crm.preferences.IPreferenceHelper
 import com.example.crm.preferences.PreferenceManager
 import com.example.crm.utility.Urls
 import com.google.android.material.snackbar.Snackbar
 
-class DraftActivity : AppCompatActivity(), PendingAdapter.ItemClickListner {
+class DraftActivity : AppCompatActivity(), PendingListAdapter.ItemClickListener {
     private lateinit var binding: ActivityDraftBinding
     private val preferenceHelper: IPreferenceHelper by lazy { PreferenceManager(applicationContext) }
     private lateinit var pendingViewModel: PendingViewModel
-    private var pendingList = ArrayList<DraftListModel>()
-    private lateinit var pendingAdapter: PendingAdapter
+    private var pendingList = ArrayList<ProjectData>()
+    private lateinit var pendingListAdapter: PendingListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDraftBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         supportActionBar?.title = "Draft"
         pendingViewModel = ViewModelProvider(this)[PendingViewModel::class.java]
-
         pendingViewModel.postingStatus.observeForever {
-            Log.d("BugInfo", "posting status: ${it.first}")
+            Log.d("TAG", "posting status updated to: ${it.first}")
             onPostingStatusChanged(it)
         }
-        Log.d("BugInfo", "DraftActivity onCreate")
-
         pendingList = ArrayList()
         binding.pendingRcv.layoutManager = LinearLayoutManager(applicationContext)
-        pendingAdapter = PendingAdapter(this,pendingList)
-        binding.pendingRcv.adapter = pendingAdapter
+        pendingListAdapter = PendingListAdapter(this,pendingList)
+        binding.pendingRcv.adapter = pendingListAdapter
         getAllData()
     }
 
-    override fun onItemClicked(draftList: DraftListModel) {
+    override fun onItemClicked(projectData: ProjectData) {
         val intent = Intent(this, FormActivity::class.java)
-        intent.putExtra("dto", draftList)
+        intent.putExtra("dto", projectData)
         startActivity(intent)
     }
 
-    override fun onMapButtonClicked(item: DraftListModel) {
-        if ((item.Lat != null && item.Long != null) || (item.Lat != 0.0 && item.Long != 0.0)) {
-            val mapUrl = Urls.getMapLink(this, item.Lat!!, item.Long!!)
+    override fun onMapButtonClicked(item: ProjectData) {
+        if ((item.latitude != null && item.longitude != null) && (item.latitude != 0.0 && item.longitude != 0.0)) {
+            val mapUrl = Urls.getMapRedirectUrl(item.latitude, item.longitude, item.projectName!!)
             val uri = Uri.parse(mapUrl)
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
@@ -65,17 +61,17 @@ class DraftActivity : AppCompatActivity(), PendingAdapter.ItemClickListner {
         }
     }
 
-    fun getAllData(){
-        pendingViewModel.getAllData.observe(this, Observer {
+    private fun getAllData() {
+        pendingViewModel.projectDataList.observe(this) {
             if (!it.isNullOrEmpty()) {
                 pendingList.clear()
                 pendingList.addAll(it.filter { !it.isPending })
                 Log.d("TAG", "List : $pendingList")
-                pendingAdapter.notifyDataSetChanged()
+                pendingListAdapter.notifyDataSetChanged()
             } else {
-                Toast.makeText(this, "No Data Found", Toast.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, "No Data Found", Snackbar.LENGTH_LONG).show()
             }
-        })
+        }
     }
 
     private fun onPostingStatusChanged(status: Pair<Int, Int>) {

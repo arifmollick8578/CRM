@@ -28,11 +28,8 @@ class SettingsActivity : AppCompatActivity() {
         loginViewModel = ViewModelProvider(this)[LoginViewModel::class.java].apply {
             shouldLogOut.observe(this@SettingsActivity) {
                 if (it) {
-                    Log.d("BugInfo", "Is login: ${preferenceHelper.getIsLogin()}")
-                    preferenceHelper.setImeiNo("")
-                    preferenceHelper.setIsLogin(false)
-                    preferenceHelper.setImeiNo("")
-                    preferenceHelper.setUserId("")
+                    Log.d("TAG", "Is login: ${preferenceHelper.getIsLogin()}")
+                    preferenceHelper.resetLogInData()
                 }
             }
         }
@@ -54,14 +51,12 @@ class SettingsActivity : AppCompatActivity() {
 
             }
         )
-
         binding.changePassword.setOnClickListener {
             val uri = Uri.parse(Urls.getChangePasswordUrl())
             val intent = Intent(Intent.ACTION_VIEW, uri)
             startActivity(intent)
         }
-
-        Log.d("BugInfo", "Setting activity created. $pendingViewModel")
+        Log.d("TAG", "Setting activity created. $pendingViewModel")
 
         binding.resetApplication.setOnClickListener {
             pendingViewModel.resetApplication()

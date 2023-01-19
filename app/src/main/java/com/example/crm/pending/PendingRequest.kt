@@ -2,7 +2,7 @@ package com.example.crm.pending
 
 import com.example.crm.CredentialRequest
 
-data class PendingRequest(
+data class PendingRequest (
     val credential: CredentialRequest,
     val imeiNo: String?,
     val userId: String?,

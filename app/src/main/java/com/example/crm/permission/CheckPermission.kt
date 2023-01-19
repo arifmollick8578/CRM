@@ -60,6 +60,6 @@ class CheckPermission {
             alert.show()
         }
 
-        private const val LOCATION_PERMISSION_CODE = 2
+        const val LOCATION_PERMISSION_CODE = 2
     }
 }

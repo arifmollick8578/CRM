@@ -1,3 +1,3 @@
 package com.example.crm
 
-data class LoginResponse(val AuthenticateUserResult : AuthenticateUserResult)
+data class LoginResponse(val authenticateUserResult : AuthenticateUserResult)

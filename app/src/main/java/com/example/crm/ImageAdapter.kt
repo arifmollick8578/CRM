@@ -3,39 +3,28 @@ package com.example.crm
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.Color.blue
-import android.net.Uri
-import android.provider.MediaStore
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.RecyclerView
 import com.example.crm.databinding.ImageItemBinding
-import com.example.crm.model.DraftListModel
 import com.example.crm.model.ImageDetails
 
 class ImageAdapter(
-    var pendingList: /*ArrayList<Uri>?*/ArrayList<Bitmap>?,
+    var pendingList: ArrayList<Bitmap>?,
     private var context: Context
-) :
-    RecyclerView.Adapter<ImageAdapter.PendingViewHolder>() {
+) : RecyclerView.Adapter<ImageAdapter.PendingViewHolder>() {
 
     private var imageDetailsList = ArrayList<ImageDetails>()
 
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PendingViewHolder {
         val view = ImageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
         return PendingViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PendingViewHolder, position: Int) {
         val getProjectForSurveyResult = pendingList?.get(position)
-        if(getProjectForSurveyResult!=null) {
-//            val bitmap: Bitmap = MediaStore.ImageDetails.Media.getBitmap(context.getContentResolver(), Uri.parse(
-//                getProjectForSurveyResult.toString()
-//            ))
+        if (getProjectForSurveyResult != null) {
             holder.viewBinding.imageView.setImageBitmap(getProjectForSurveyResult)
         }
 
@@ -70,9 +59,7 @@ class ImageAdapter(
     }
 
     inner class PendingViewHolder(var viewBinding: ImageItemBinding) :
-        RecyclerView.ViewHolder(viewBinding.root) {
-
-    }
+        RecyclerView.ViewHolder(viewBinding.root)
 
     override fun getItemCount(): Int {
         return pendingList!!.size

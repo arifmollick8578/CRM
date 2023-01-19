@@ -9,6 +9,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import retrofit.RetrofitInstance
 
+// Not using for now, will use soon.
 class LocationWorker(val context: Context, workerParams: WorkerParameters): CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {

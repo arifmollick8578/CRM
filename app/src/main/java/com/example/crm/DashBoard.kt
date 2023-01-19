@@ -4,36 +4,35 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import com.example.crm.databinding.ActivityDashBoardBinding
 import com.example.crm.model.UserLocation
 import com.example.crm.pending.PendingViewModel
-import com.example.crm.preferences.IPreferenceHelper
-import android.location.LocationListener
-import android.net.ConnectivityManager
-import android.view.MenuItem
-import android.widget.TextView
-import androidx.core.content.getSystemService
-import androidx.work.*
-import androidx.work.WorkInfo.State
 import com.example.crm.permission.CheckPermission
+import com.example.crm.permission.CheckPermission.Companion.LOCATION_PERMISSION_CODE
 import com.example.crm.permission.CheckPermission.Companion.requestLocationPermissions
 import com.example.crm.permission.CheckPermission.Companion.showDialogToAccessGps
+import com.example.crm.preferences.IPreferenceHelper
 import com.example.crm.preferences.PreferenceManager
 import com.example.crm.utility.CurrentDateTime
 import com.example.crm.worker.LocationWorker
@@ -53,15 +52,18 @@ class DashBoard : AppCompatActivity(), LocationListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityDashBoardBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         setSupportActionBar(binding.appBarDashBoard.toolbar)
         pendingViewModel = ViewModelProvider(this)[PendingViewModel::class.java].apply {
             allLocationData.observe(this@DashBoard) {
                 // Will implement worker
 //                startWorker(it)
+            }
+            currentLocation.observeForever {
+                Snackbar
+                    .make(binding.root, "Location updated: ${it.latitude}", Snackbar.LENGTH_LONG)
+                    .show()
             }
         }
 
@@ -73,32 +75,26 @@ class DashBoard : AppCompatActivity(), LocationListener {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_pending, R.id.nav_gallery, R.id.nav_slideshow , R.id.nav_home
+                R.id.nav_pending, R.id.nav_nearby, R.id.nav_settings
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        navController.addOnDestinationChangedListener(object :
-            NavController.OnDestinationChangedListener {
-            override fun onDestinationChanged(
-                controller: NavController,
-                destination: NavDestination,
-                @Nullable arguments: Bundle?
-            ) {
-                val menuId = destination.id
-                when (menuId) {
-                    R.id.nav_home -> {
-                        Toast.makeText(this@DashBoard, "You tapped pending", Toast.LENGTH_LONG)
-                            .show()
-                    }
-                    else -> Toast.makeText(this@DashBoard, "You tapped else", Toast.LENGTH_LONG)
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.nav_pending -> {
+                    Toast.makeText(this@DashBoard, "You tapped pending", Toast.LENGTH_LONG)
                         .show()
                 }
+                else -> Toast.makeText(this@DashBoard, "You tapped else", Toast.LENGTH_LONG)
+                    .show()
             }
-        })
+        }
 
-        navView.getHeaderView(0).findViewById<TextView>(R.id.user_name).text = preferenceHelper.getUserId()
-        navView.getHeaderView(0).findViewById<TextView>(R.id.imei_number).text = preferenceHelper.getImeiNo()
+        navView.getHeaderView(0).findViewById<TextView>(R.id.user_name).text =
+            preferenceHelper.getUserId()
+        navView.getHeaderView(0).findViewById<TextView>(R.id.imei_number).text =
+            preferenceHelper.getImeiNo()
 
         saveLocationData()
     }
@@ -139,14 +135,18 @@ class DashBoard : AppCompatActivity(), LocationListener {
     }
 
     private fun saveLocationData() {
-        Log.d("BugInfo", "SaveLocationData called")
+        Log.d("TAG", "Location save starting.")
         locationManager = this.getSystemService(LOCATION_SERVICE) as LocationManager
-
         if (!CheckPermission.checkLocationPermissions(this)) requestLocationPermissions()
-        if ( !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             this.showDialogToAccessGps()
         }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this@DashBoard)
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            10000,
+            10f,
+            this@DashBoard
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -155,11 +155,16 @@ class DashBoard : AppCompatActivity(), LocationListener {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-           if ( !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                    this.showDialogToAccessGps()
-           }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0f, this@DashBoard)
+        if (requestCode == LOCATION_PERMISSION_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                this.showDialogToAccessGps()
+            }
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                0L,
+                0f,
+                this@DashBoard
+            )
         }
     }
 
@@ -169,8 +174,11 @@ class DashBoard : AppCompatActivity(), LocationListener {
             return
         }
         Log.d("BugInfo", "Start worker called.")
-        val workRequest = PeriodicWorkRequest.Builder(LocationWorker::class.java, Duration.ofMinutes(15))
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
+        val workRequest =
+            PeriodicWorkRequest.Builder(LocationWorker::class.java, Duration.ofMinutes(15))
+                .setConstraints(
+                    Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+                ).build()
         locationWorker.enqueue(
             workRequest
         )
@@ -190,6 +198,8 @@ class DashBoard : AppCompatActivity(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
+        Log.d("TAG", "DraftActivity: locationListener: ${location.latitude}")
+        pendingViewModel.updateCurrentLocation(location)
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         pendingViewModel.insertUserLocation(getUserLocation(location.latitude, location.longitude))
 
